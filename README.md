@@ -136,7 +136,12 @@ You can now run
 
     java Thesaurus <file1> <file2>
 
-This takes as a command line input the same two files for the range (so it knows what file to search for). After a quick read through the data, you can give the program any word (with the attached POS tag) and the program will output any word in its database whose similarity with the given word is above the calculated threshold. The threshold is calculated based on the number of files parsed; since it keeps a running total, the value for a "highly similar matching" is obviously going to be less than 0.1 if you didn't go through the entire database. Note that the threshold changes for different types of words (noun/verb/adjective) in order to provide a more appropriate matching. Also, only words of the same POS will be returned, as those were the only ones whose similarities were calculated in the first place. An example is shown below:
+This takes as a command line input the same two files for the range (so it knows what file to search for). After a quick read through the data, you can give the program any word (with the attached POS tag) and the program will output any word in its database whose similarity with the given word is above the calculated threshold. The threshold is calculated based on the number of files parsed; since it keeps a running total, the value for a "highly similar matching" is obviously going to be less than 0.1 if you didn't go through the entire database. Using polynomial regression on what were considered to be good boundaries, two curves were derived, representing minimum required similarity as a function of number of files parsed.
+
+![nouns](https://s3.amazonaws.com/erosenfeld.github.com/noun-similarity-threshold.png)
+![verbs/adjectives](https://s3.amazonaws.com/erosenfeld.github.com/verb-adjective-similarity-threshold.png)
+
+Note that the threshold changes for different types of words (noun/verb/adjective) in order to provide a more appropriate matching. Also, only words of the same POS will be returned, as those were the only ones whose similarities were calculated in the first place. An example is shown below:
 
 ```
 elan-mp:java elan$ java -Xmx4g Thesaurus 0 20
