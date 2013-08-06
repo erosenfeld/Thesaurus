@@ -33,7 +33,7 @@ There are two options for implementing the thesaurus, each with upsides and down
 
 ## Similarity ##
 
-### SimilarityTester ###
+#### SimilarityTester ####
 
 To get a feel for the meaning of the "similarity" value, you can run
 
@@ -41,7 +41,9 @@ To get a feel for the meaning of the "similarity" value, you can run
 
 Note that this program requires about 4GB of memory, so you may have to increase the Java heap space with the `-Xmx` flag. This will read in the 98 entropy files and prompt you for two words. Make sure to append "/N", "/A", or "/V" to the words, as the thesaurus treats different POS tags as entirely different tokens. Since similarity is symmetric, the order of the words doesn't matter. If a word doesn't appear in the corpus, the value returned will be 0.0.
 
-Running this will give you a feel for the kind of data to expect. As a general rule, a similarity of 0.1 between nouns indicates a strong correlation, while verbs and adjectives will often require a similarity of 0.15 or even higher before they can be considered "linked". Numerically, similarity is an estimate of the probability that one word can replace another while maintaining syntactic integrity. Since the similarity between `train/N` and `bus/N` is 0.15184711204531073, this means that ~15% of the time, one can be substituted for the other and the text will not change drastically in meaning.
+Running this will give you a feel for the kind of data to expect. As a general rule, a similarity of 0.1 between nouns indicates a strong correlation, while verbs and adjectives will often require a similarity of 0.15 or even higher before they can be considered "linked". Numerically, similarity is an estimate of the probability that one word can replace another while maintaining syntactic integrity (that is, the entropy of the sentence). Since the similarity between `train/N` and `bus/N` is 0.15184711204531073, we can deduce that approximately 15% of the time, one can be substituted for the other and the text will not change drastically information content or meaning.
+
+Keep in mind that opposites still have about the same entropy, and from a parser's perspective they have similar meanings since they fall into the exact same category. It follows that while some words may intuitively have no similarity--such as `happy/A` and `sad/A`--they actually are very similar; for a syntactical parser, "I feel happy" and "I feel sad" are practically identical, as the two words will be parsed and linked to other words similarly.
 
 Lower similarities indicate either no connection or a little connection; a high similarity means that either the two words are actual synonyms, or that one word can often be replaced with another without a major syntax change (e.g. "I took the train to work" vs. "I took the bus to work").  Some examples are listed below:
 
@@ -61,7 +63,7 @@ happy/A - melodramatic/A:	0.017074012637758835
 
 While the program accepts two words with different POS tags, they rarely have a high similarity because of how "similarity" is defined and calculated. However, the option is there.
 
-### Running the Program ###
+#### Running the Program ####
 
 Now that you have a good feel for similarity, you can run
 
@@ -81,17 +83,25 @@ This performs three operations, detailed below (keep in mind file names will hav
 
 * Second, it reads in the files it just wrote and removes all pairs in which any of the involved words are not found in the dictionary provided by Mathematica.
 
-* Finally, this new data is read in, and is sorted by degree distribution. The degree of a relation-to-second-word pair is the total number of "first words" to which the pair is attached. The earlier files are those arcs whose second element have degrees of one, and increases (the largest is around 40,000).
+* Finally, this new data is read in, and is sorted by degree distribution. The degree of a relation-to-second-word pair is the total number of "first words" to which the pair is attached. The earlier files are those arcs whose second element have degrees of one, and increases as you go through the files (the largest is around 40,000).
 
-Now that these three steps have been performed, `CreateThesaurus.java` can be run. This takes as a command line argument two file numbers between 00 and 98, and uses the data in that range of files (including) to create a file in thesaurus_data with an appropriate name. If you would like to include all data for a specific range of degrees, run
+Now that these three steps have been performed, you can run
+
+    java CreateThesaurus <file1> <file2>
+
+This takes as a command line argument two file numbers between 00 and 98, and uses the data in that range of files (including) to create a file in thesaurus_data with an appropriate name. If you would like to include all data for a specific range of degrees, run
 
     python find_degree_range.py <degree-lower-bound> <degree-upper-bound>
 
 which takes as command line input the upper and lower bounds, and returns the file range that includes those bounds.
 
-A file created from a range of 20 parsed files will be about 500MB, though it will vary depending on which 20 files were used. Keep in mind that the accuracy may decrease massively if fewer than the full 98 files are used (though 20 files is usually enough to get a good estimate). Because of the method of calculating mutual entropy and similarity, small changes in size of data can drastically alter results. Also note that the lower-numbered files provide less information, and therefore data based on only lower numbers tends to be extremely erratic (but they are much faster to parse through).
+A file created from a range of 20 parsed files will be about 500MB, though it will vary depending on which 20 files were used. Keep in mind that the accuracy will decrease if fewer than the full 98 files are used (though 20 files is usually enough to get a good estimate). Because of the method of calculating mutual entropy and similarity, small changes in the size of the data can drastically alter results. Also note that the lower-numbered files provide less information, and therefore data based on only lower numbers tend to be erratic and inaccurate (but they are much faster to parse through).
 
-You can now run `Thesaurus.java`. This takes as a command line input the same two files for the range (so it knows what file to search for). After a quick read through of the data, you can give the program any word (with the attached POS tag) and the program will output any word in its database whose similarity with the given word is above the calculated threshold. The threshold is calculated based on the number of files parsed; since it keeps a running total, the value for a "highly similar matching" is obviously going to be less than 0.1 if you didn't go through the entire database). Note that the threshold changes for different types of words (noun/verb/adjective) in order to provide a more appropriate matching. Also, only words of the same POS will be returned, as those were the only ones whose similarities were calculated in the first place. You can also give a threshold (in the form of a double) after the word to specify a particular threshold (for example, type "0" after the word to get a list of all ~400 matches).
+You can now run
+
+    java Thesaurus <file1> <file2>
+
+This takes as a command line input the same two files for the range (so it knows what file to search for). After a quick read through the data, you can give the program any word (with the attached POS tag) and the program will output any word in its database whose similarity with the given word is above the calculated threshold. The threshold is calculated based on the number of files parsed; since it keeps a running total, the value for a "highly similar matching" is obviously going to be less than 0.1 if you didn't go through the entire database). Note that the threshold changes for different types of words (noun/verb/adjective) in order to provide a more appropriate matching. Also, only words of the same POS will be returned, as those were the only ones whose similarities were calculated in the first place. You can also give a threshold (in the form of a double) after the word to specify a particular threshold (for example, type "0" after the word to get a list of all ~400 matches).
 
 # Creating Your Own Thesaurus #
 ---
