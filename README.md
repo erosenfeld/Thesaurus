@@ -1,7 +1,7 @@
 # Introduction #
 ---
 
-This README describes how the Thesaurus was produced. Much of the work is based off of [Automatic Retrieval and Clustering of Similar Words](http://www.computing.dcu.ie/~ebicici/Week3/acl98.pdf), along with some ideas from [A Dataset of Syntactic-Ngrams over Time from a Very Large Corpus of English Books](http://commondatastorage.googleapis.com/books/syntactic-ngrams/syntngrams.final.pdf). Instructions on how to produce your own Thesaurus using a different corpus can be found under **Creating Your Own Thesaurus** (be warned that for any appreciably-sized dataset this takes several hundred hours of runtime using several hundred gigs of both hard-drive space and RAM). Instructions on using the provided thesaurus can be found under **How to Implement**.
+This README describes how the Thesaurus was produced. Much of the work is based off of [Automatic Retrieval and Clustering of Similar Words](http://www.computing.dcu.ie/~ebicici/Week3/acl98.pdf), along with some ideas from [A Dataset of Syntactic-Ngrams over Time from a Very Large Corpus of English Books](http://commondatastorage.googleapis.com/books/syntactic-ngrams/syntngrams.final.pdf). Instructions on how to produce your own Thesaurus using a different corpus can be found under [**Creating Your Own Thesaurus**](https://github.com/erosenfeld/Thesaurus#creating-your-own-thesaurus) (be warned that for any appreciably-sized dataset this takes several hundred hours of runtime using several hundred gigs of both hard-drive space and RAM). Instructions on using the provided thesaurus can be found under [**How to Implement**](https://github.com/erosenfeld/Thesaurus#how-to-implement).
 
 Due to the data being split into 99 files (arcs.00-of-98.txt through arcs.98-of-98.txt), "\*\*" will be used to indicate all files, 00 through 98.
 
@@ -22,9 +22,9 @@ Next, all the arcs were rewritten in the form [word, POS tag, relation, second w
 
 Each word and its Part of Speech (POS) tag was then replaced with a token. Each token is simply the word, with "/A", "/N", or "/V" appended to the end, depending on whether the part of speech indicates the word is used as an adjective, noun, or verb, respectively. Another opportunity was taken to cleanse the dataset, where any words whose POS tags were not indicative of either a noun, verb, or adjective were removed from consideration.
 
-The thesaurus needs a list of dictionary words. I used the dictionary provided by Mathematica by calling `DictionaryLookup[]`.
+The thesaurus needs a list of dictionary words. I used the dictionary provided by Mathematica via `DictionaryLookup[]`.
 
-Following these steps, a series of Python scripts were used to further condense and format the data. A full step-by-step procedure can be found under **Creating Your Own Thesaurus**.
+Following these steps, a series of Python scripts were used to further condense and format the data. A full step-by-step procedure can be found under [**Creating Your Own Thesaurus**](https://github.com/erosenfeld/Thesaurus#creating-your-own-thesaurus).
 
 # How to Implement #
 ---
@@ -39,7 +39,7 @@ To get a feel for the meaning of the "similarity" value, you can run
 
     java SimilarityTester
 
-Note that this program requires about 4 GB of memory, so you may have to increase the Java heap space with the `-Xmx` flag. This will read in the 98 entropy files and prompt you for two words. Make sure to append "/N", "/A", or "/V" to the words, as the thesaurus treats different POS tags as entirely different tokens. Since similarity is symmetric, the order of the words doesn't matter. If a word doesn't appear in the corpus, the value returned will be 0.0.
+Note that this program requires about 4GB of memory, so you may have to increase the Java heap space with the `-Xmx` flag. This will read in the 98 entropy files and prompt you for two words. Make sure to append "/N", "/A", or "/V" to the words, as the thesaurus treats different POS tags as entirely different tokens. Since similarity is symmetric, the order of the words doesn't matter. If a word doesn't appear in the corpus, the value returned will be 0.0.
 
 Running this will give you a feel for the kind of data to expect. As a general rule, a similarity of 0.1 between nouns indicates a strong correlation, while verbs and adjectives will often require a similarity of 0.15 or even higher before they can be considered "linked". Numerically, similarity is an estimate of the probability that one word can replace another while maintaining syntactic integrity. Since the similarity between `train/N` and `bus/N` is 0.15184711204531073, this means that ~15% of the time, one can be substituted for the other and the text will not change drastically in meaning.
 
@@ -67,7 +67,7 @@ Now that you have a good feel for similarity, you can run
 
     java Similarity
 
-Again, this will require about 4 GB of memory, so use the `-Xmx` flag if necessary. This program takes in a single word and prints out all matches with a similarity of 0.1 or higher, keeping track of the maximum similarity match. Keep in mind that this runs *much* slower than the second method (described below), but is more thorough and requires no additional setup.
+Again, this will require about 4GB of memory, so use the `-Xmx` flag if necessary. This program takes in a single word and prints out all matches with a similarity of 0.1 or higher, keeping track of the maximum similarity match. Keep in mind that this runs *much* slower than the second method (described below), but requires no additional setup and is more thorough (the faster version only keeps a record of the first ~400 matches; any more would be space-prohibitive).
 
 ## Thesaurus ##
 
@@ -85,13 +85,13 @@ This performs three operations, detailed below (keep in mind file names will hav
 
 Now that these three steps have been performed, `CreateThesaurus.java` can be run. This takes as a command line argument two file numbers between 00 and 98, and uses the data in that range of files (including) to create a file in thesaurus_data with an appropriate name. If you would like to include all data for a specific range of degrees, run
 
-    python find_degree_range.py
+    python find_degree_range.py <degree-lower-bound> <degree-upper-bound>
 
 which takes as command line input the upper and lower bounds, and returns the file range that includes those bounds.
 
 A file created from a range of 20 parsed files will be about 500MB, though it will vary depending on which 20 files were used. Keep in mind that the accuracy may decrease massively if fewer than the full 98 files are used (though 20 files is usually enough to get a good estimate). Because of the method of calculating mutual entropy and similarity, small changes in size of data can drastically alter results. Also note that the lower-numbered files provide less information, and therefore data based on only lower numbers tends to be extremely erratic (but they are much faster to parse through).
 
-You can now run `Thesaurus.java`. This takes as a command line input the same two files for the range (so it knows what file to search for). After a quick read through of the data, you can give the program any word (with the attached POS tag) and the program will output any word in its database whose similarity with the given word is above the calculated threshold. The threshold is calculated based on the number of file parsed; since it keeps a running total, the value for a "highly similar matching" is obviously going to be less than 0.1 if you didn't go through the entire database). Note that the threshold changes for different types of words (noun/verb/adjective) in order to provide a more appropriate matching. Also, only words of the same POS will be returned, as those were the only ones whose similarities were calculated in the first place. You can also give a threshold (in the form of a double) after the word to specify a particular threshold (for example, type "0" after the word to get a list of all ~400 matches).
+You can now run `Thesaurus.java`. This takes as a command line input the same two files for the range (so it knows what file to search for). After a quick read through of the data, you can give the program any word (with the attached POS tag) and the program will output any word in its database whose similarity with the given word is above the calculated threshold. The threshold is calculated based on the number of files parsed; since it keeps a running total, the value for a "highly similar matching" is obviously going to be less than 0.1 if you didn't go through the entire database). Note that the threshold changes for different types of words (noun/verb/adjective) in order to provide a more appropriate matching. Also, only words of the same POS will be returned, as those were the only ones whose similarities were calculated in the first place. You can also give a threshold (in the form of a double) after the word to specify a particular threshold (for example, type "0" after the word to get a list of all ~400 matches).
 
 # Creating Your Own Thesaurus #
 ---
