@@ -5,7 +5,7 @@ This README describes how the Thesaurus was produced. Much of the work is based 
 
 Due to the data being split into 99 files (arcs.00-of-98.txt through arcs.98-of-98.txt), "\*\*" will be used to indicate all files, 00 through 98.
 
-The initial files required are the Syntactic N-grams Over Time provided by Google Research. The overview can be found at <http://googleresearch.blogspot.com/2013/05/syntactic-ngrams-over-time.html>, which links to the actual download at <http://commondatastorage.googleapis.com/books/syntactic-ngrams/index.html>. Only the standard Arcs (files 00-98) from the subsection **English 1 Million** were used. While the files themselves are not included, an md5 checksum of each of the gzipped arc files and each file's word count is located in eras/arcs.
+The initial files required are the Syntactic N-grams Over Time provided by Google Research. The overview can be found at <http://googleresearch.blogspot.com/2013/05/syntactic-ngrams-over-time.html>, which links to the actual download at <http://commondatastorage.googleapis.com/books/syntactic-ngrams/index.html>. Only the standard Arcs (files 00-98) from the subsection *English 1 Million* were used. While the files themselves are not included, an md5 checksum of each of the gzipped arc files and each file's word count is located in eras/arcs.
 
 The arc files provided by Google were parsed into a dictionary, where each word hashed to its number of occurrences in four different eras, as well as the total count of the word. The four eras were \*\*\*\*-1920, 1920-1950, 1950-2000, and 2000-\*\*\*\* (roughly divided by WWI and WWII, as well as the new millennium). For some reason, the Google files include a few items that are marked as appearing zero times total, so the arc files had to be purged of all such occurrences.
 
@@ -36,7 +36,9 @@ There are two options for implementing the thesaurus, each with upsides and down
 ### SimilarityTester ###
 
 To get a feel for the meaning of the "similarity" value, you can run
+
     java SimilarityTester
+
 Note that this program requires about 4 GB of memory, so you may have to increase the Java heap space with the `-Xmx` flag. This will read in the 98 entropy files and prompt you for two words. Make sure to append "/N", "/A", or "/V" to the words, as the thesaurus treats different POS tags as entirely different tokens. Since similarity is symmetric, the order of the words doesn't matter. If a word doesn't appear in the corpus, the value returned will be 0.0.
 
 Running this will give you a feel for the kind of data to expect. As a general rule, a similarity of 0.1 between nouns indicates a strong correlation, while verbs and adjectives will often require a similarity of 0.15 or even higher before they can be considered "linked". Numerically, similarity is an estimate of the probability that one word can replace another while maintaining syntactic integrity. Since the similarity between `train/N` and `bus/N` is 0.15184711204531073, this means that ~15% of the time, one can be substituted for the other and the text will not change drastically in meaning.
@@ -62,13 +64,17 @@ While the program accepts two words with different POS tags, they rarely have a 
 ### Running the Program ###
 
 Now that you have a good feel for similarity, you can run
+
     java Similarity
+
 Again, this will require about 4 GB of memory, so use the `-Xmx` flag if necessary. This program takes in a single word and prints out all matches with a similarity of 0.1 or higher, keeping track of the maximum similarity match. Keep in mind that this runs *much* slower than the second method (described below), but is more thorough and requires no additional setup.
 
 ## Thesaurus ##
 
 If you would like to create an almost instant-lookup thesaurus, as opposed to just running through and calculating the similarities for a single word, you should use `CreateThesaurus.java`. This requires some additional setup which can be completed by running
+
     python degree_sort.py
+
 This performs three operations, detailed below (keep in mind file names will have to be changed due to repository size limitations).
 
 * First, it reads in the entropies and indexes them by the second element of each pair (relation and second word), rather than by first word.
@@ -78,7 +84,9 @@ This performs three operations, detailed below (keep in mind file names will hav
 * Finally, this new data is read in, and is sorted by degree distribution. The degree of a relation-to-second-word pair is the total number of "first words" to which the pair is attached. The earlier files are those arcs whose second element have degrees of one, and increases (the largest is around 40,000).
 
 Now that these three steps have been performed, `CreateThesaurus.java` can be run. This takes as a command line argument two file numbers between 00 and 98, and uses the data in that range of files (including) to create a file in thesaurus_data with an appropriate name. If you would like to include all data for a specific range of degrees, run
+
     python find_degree_range.py
+
 which takes as command line input the upper and lower bounds, and returns the file range that includes those bounds.
 
 A file created from a range of 20 parsed files will be about 500MB, though it will vary depending on which 20 files were used. Keep in mind that the accuracy may decrease massively if fewer than the full 98 files are used (though 20 files is usually enough to get a good estimate). Because of the method of calculating mutual entropy and similarity, small changes in size of data can drastically alter results. Also note that the lower-numbered files provide less information, and therefore data based on only lower numbers tends to be extremely erratic (but they are much faster to parse through).
