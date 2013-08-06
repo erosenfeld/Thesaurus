@@ -201,100 +201,42 @@ public class Similarity {
 
 		while(true) {
 
-			System.out.print("\nEnter word: ");
+			try {
 
-			String w1 = in.nextLine();
-			char type = w1.charAt(w1.length()-1);
-			if (type != 'f') {
+				System.out.print("\nEnter word: ");
 
-				System.out.println(Arrays.asList(words).indexOf(w1)+"\n");
+				String w1 = in.nextLine();
+				char type = w1.charAt(w1.length()-1);
+
+				System.out.println(w1+" found at index "+Arrays.asList(words).indexOf(w1)+"\n");
 
 				double max = 0.0;
 				String maxs = "";
 				for(int i=1; i<296964; i++) { // '%' isn't in the dictionary, can be skipped
+
 					String w2 = words[i];
-
-					if (i%50000==0) System.out.println("\nTotal tested: "+i+"  (up to "+w2+", max is "+maxs
-						+" with "+max+")\n");
-
 					if (w2.charAt(w2.length()-1) != type) continue;
 					if (w2.equals(w1) || tooSimilar(w1,w2)) continue;
 
-					double z = 0.0;
+					double sim = 0.0;
 
-					try { z = calcSim(w1, w2); } catch (Exception e) {};
+					try { sim = calcSim(w1, w2); } catch (Exception e) {};
 
-					if (z > 0.1) {
+					if (sim > 0.15 || (type == 'N' && sim > 0.1)) {
 
-						if (z > max) {
-							max = z;
+						if (sim > max) {
+							max = sim;
 							maxs = w2;
 						}
 						String add = "";
 						for (int x=0; x<14-w2.length(); x++) {add += " ";}
-						//System.out.println(w1+" - "+w2+": "+z+add);
-						System.out.println(w2+" - "+z);
+						System.out.println(w2+" - "+sim);
 					}
 				}
-				System.out.println("\nMax is "+maxs+" with "+max);
-			} else { // provided an itemsets file
+				System.out.println("\nMax is "+maxs+" with "+max+"\n");
 
-				String filename = w1.substring(0,w1.length()-2);
-				Hashtable<Long, Double> thesaurus = new Hashtable<Long, Double>();
-
-				try {
-
-					BufferedReader reader = new BufferedReader(new FileReader(filename));
-					String s;
-
-					System.out.println("reading file");
-					int count = 0;
-
-					while ((s = reader.readLine()) != null) {
-
-						count++;
-						if (count % 100 == 0) System.out.println(count);
-						if (count > THESAURUS_SIZE) break;
-
-						double sim = 0.0;
-						long key = Long.parseLong(s.substring(s.indexOf('\t')+1));
-
-						String word1 = words[(int)(key & 0x7FFFF)];
-						String word2 = words[(int)((key >> 32) & 0x7FFFF)];
-
-						try { sim = calcSim(word1, word2); } catch (Exception e) {};
-
-						thesaurus.put(key, sim);
-					}
-					System.out.println("\ndone\n");
-
-				} catch (Exception e) {
-					System.out.println("Invalid file name");
-					e.printStackTrace();
-					continue;
-				}
-
-				while(true) {
-					System.out.print("\nEnter word: ");
-
-					String w = in.nextLine();
-					int index = Arrays.asList(words).indexOf(w);
-
-					for (long key : Collections.list(thesaurus.keys())) {
-
-						int ind1 = (int)(key & 0x7FFFF);
-						int ind2 = (int)((key >> 32) & 0x7FFFF);
-
-
-						if (index == ind1) {
-							double sim = thesaurus.get(key);
-							if (sim > 0.01) System.out.println(words[ind2]+" - "+sim);
-						} else if (index == ind2) {
-							double sim = thesaurus.get(key);
-							if (sim > 0.01) System.out.println(words[ind1]+" - "+sim);
-						}
-					}
-				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}

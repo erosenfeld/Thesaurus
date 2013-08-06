@@ -69,7 +69,42 @@ Now that you have a good feel for similarity, you can run
 
     java Similarity
 
-Again, this will require about 4GB of memory, so use the `-Xmx` flag if necessary. This program takes in a single word and prints out all matches with a similarity of 0.1 or higher, keeping track of the maximum similarity match. Keep in mind that this runs *much* slower than the second method (described below), but requires no additional setup and is more thorough (the faster version only keeps a record of the first ~400 matches; any more would be space-prohibitive).
+Again, this will require about 4GB of memory, so use the `-Xmx` flag if necessary. This program takes in a single word and prints out all matches above the similarity threshold, keeping track of the maximum similarity match. Keep in mind that this runs *much* slower than the second method (described below), but requires no additional setup and is more thorough (the faster version only keeps a record of the first ~400 matches; any more would be space-prohibitive). Here is an example of its usage:
+
+```
+elan-mp:java elan$ java -Xmx4g Similarity
+
+Reading:
+ 00 / 01 / 02 / 03 / 04 / 05 / 06 / 07 / 08 / 09 /
+ 10 / 11 / 12 / 13 / 14 / 15 / 16 / 17 / 18 / 19 /
+ 20 / 21 / 22 / 23 / 24 / 25 / 26 / 27 / 28 / 29 /
+ 30 / 31 / 32 / 33 / 34 / 35 / 36 / 37 / 38 / 39 /
+ 40 / 41 / 42 / 43 / 44 / 45 / 46 / 47 / 48 / 49 /
+ 50 / 51 / 52 / 53 / 54 / 55 / 56 / 57 / 58 / 59 /
+ 60 / 61 / 62 / 63 / 64 / 65 / 66 / 67 / 68 / 69 /
+ 70 / 71 / 72 / 73 / 74 / 75 / 76 / 77 / 78 / 79 /
+ 80 / 81 / 82 / 83 / 84 / 85 / 86 / 87 / 88 / 89 /
+ 90 / 91 / 92 / 93 / 94 / 95 / 96 / 97 / 98 /
+Database created. Size: 60986967
+Total # of words: 296964
+
+Enter word: calculus/N
+calculus/N found at index 38585
+
+algebra/N - 0.21553904380128924
+arithmetic/N - 0.12226048592758765
+concretions/N - 0.10856868713046178
+equations/N - 0.10930502523137159
+formulation/N - 0.10733756077285754
+geometry/N - 0.12814478043616603
+logic/N - 0.10569228205816365
+mathematics/N - 0.12151039139750312
+notation/N - 0.12965385517465147
+semantics/N - 0.10428999093776702
+trigonometry/N - 0.10925969942359745
+
+Max is algebra/N with 0.21553904380128924
+```
 
 ## Thesaurus ##
 
@@ -89,7 +124,7 @@ Now that these three steps have been performed, you can run
 
     java CreateThesaurus <file1> <file2>
 
-This takes as a command line argument two file numbers between 00 and 98, and uses the data in that range of files (including) to create a file in thesaurus_data with an appropriate name. If you would like to include all data for a specific range of degrees, run
+Again, this will probably require an increase in the maximum Java heap size; the size required depends on how many files/which files you use. This takes as a command line argument two file numbers between 00 and 98, and uses the data in that range of files (including) to create a file in thesaurus_data with an appropriate name. If you would like to include all data for a specific range of degrees, run
 
     python find_degree_range.py <degree-lower-bound> <degree-upper-bound>
 
@@ -101,7 +136,39 @@ You can now run
 
     java Thesaurus <file1> <file2>
 
-This takes as a command line input the same two files for the range (so it knows what file to search for). After a quick read through the data, you can give the program any word (with the attached POS tag) and the program will output any word in its database whose similarity with the given word is above the calculated threshold. The threshold is calculated based on the number of files parsed; since it keeps a running total, the value for a "highly similar matching" is obviously going to be less than 0.1 if you didn't go through the entire database). Note that the threshold changes for different types of words (noun/verb/adjective) in order to provide a more appropriate matching. Also, only words of the same POS will be returned, as those were the only ones whose similarities were calculated in the first place. You can also give a threshold (in the form of a double) after the word to specify a particular threshold (for example, type "0" after the word to get a list of all ~400 matches).
+This takes as a command line input the same two files for the range (so it knows what file to search for). After a quick read through the data, you can give the program any word (with the attached POS tag) and the program will output any word in its database whose similarity with the given word is above the calculated threshold. The threshold is calculated based on the number of files parsed; since it keeps a running total, the value for a "highly similar matching" is obviously going to be less than 0.1 if you didn't go through the entire database. Note that the threshold changes for different types of words (noun/verb/adjective) in order to provide a more appropriate matching. Also, only words of the same POS will be returned, as those were the only ones whose similarities were calculated in the first place. An example is shown below:
+
+```
+elan-mp:java elan$ java -Xmx4g Thesaurus 0 20
+
+Reading...............................................................
+
+Enter word: calculus/N
+
+calculi/N - 0.01942499467852897
+algebra/N - 0.01399100278066545
+geometry/N - 0.008408733712801793
+arithmetic/N - 0.006997741489690139
+concretions/N - 0.006980555983174796
+logic/N - 0.006182549045309564
+integral/N - 0.005629090815530466
+gallstone/N - 0.004993704825605044
+notation/N - 0.004267997942994417
+equations/N - 0.004212733060622694
+plaque/N - 0.0038693567393676544
+caries/N - 0.0038497330362240547
+tumor/N - 0.0037901328999775438
+multiplication/N - 0.00361934387862254
+tartar/N - 0.003603262298334568
+physics/N - 0.0035871388101105356
+predicates/N - 0.0034127363121227387
+bladder/N - 0.003280695597132573
+goldman/N - 0.0031363630550712528
+saliva/N - 0.00312613588163945
+gravel/N - 0.0030887793139308217
+```
+
+You can also give a threshold (in the form of a double) after the word to specify a particular threshold (for example, type "0" after the word to get a list of all ~400 matches).
 
 # Creating Your Own Thesaurus #
 ---
