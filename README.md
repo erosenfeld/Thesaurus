@@ -1,51 +1,90 @@
-This README describes how the Thesaurus was produced. Note that some files and/or code may be missing, as this was initially intended to be a solo project. Measures were taken to ensure that missing steps were at least described. A few **very** simple scripts are left out, but can easily be reproduced. Additionally, some files may have been moved around due to space and memory issues, so some scripts might require the editing of file locations to properly run. Due to the data being split into 99 files (arcs.00-of-98.txt through arcs.98-of-98.txt), "\*\*" will be used to indicate all files, 00 through 98. Assume a base directory of Thesaurus/, with all subsequent subdirectories explicitly indicated where necessary for file distinction.
+# Introduction #
+---
 
-The initial files required are the Syntactic N-grams Over Time provided by Google Research. The overview can be found at http://googleresearch.blogspot.com/2013/05/syntactic-ngrams-over-time.html, which links to the actual download at http://commondatastorage.googleapis.com/books/syntactic-ngrams/index.html. Only the standard Arcs (files 00-98) from the subsection **English 1 Million** were used. While the files themselves are not included, an md5 checksum of each of the gzipped arc files and each file's word count is located in eras/arcs.
+This README describes how the Thesaurus was produced. Much of the work is based off of [Automatic Retrieval and Clustering of Similar Words](http://www.computing.dcu.ie/~ebicici/Week3/acl98.pdf), along with some ideas from [A Dataset of Syntactic-Ngrams over Time from a Very Large Corpus of English Books](http://commondatastorage.googleapis.com/books/syntactic-ngrams/syntngrams.final.pdf). Instructions on how to produce your own Thesaurus using a different corpus can be found under **Creating Your Own Thesaurus** (be warned that for any appreciably-sized dataset this takes several hundred hours of runtime using several hundred gigs of both hard-drive space and RAM). Instructions on using the provided thesaurus can be found under **How to Implement**.
 
-The arc files provided by Google (downloaded to arcs/) were parsed into a dictionary, where each word hashed to its number of occurrences in four different eras, as well as the total count of the word. The four eras were \*\*\*\*-1920, 1920-1950, 1950-2000, and 2000-\*\*\*\* (roughly divided by WWI and WWII, as well as the new millennium). This data was written by eras/eras.py to eras/eras.\*\*.txt. The eras.\*\*.txt files were then consolidated into one file, named era-counts.txt. Note that, for some reason, the Google files include a few items that are marked as appearing zero times total. The arc files must be read through and have all such occurrences removed in order for future parsing to work (this is what the remnant arcs-fixed-\*\*-\*\*.txt files were).
+Due to the data being split into 99 files (arcs.00-of-98.txt through arcs.98-of-98.txt), "\*\*" will be used to indicate all files, 00 through 98.
 
-The words in eras/era-counts.txt were then sorted by magnitude, based on their number of occurrences in each of the eras. For each sorting, the data was written to eraX-counts.txt, where X signified the era by which the words were sorted (i.e., era0-counts.txt is data sorted by number of occurrences in the period \*\*\*\*-1920). Using Mathematica, each of the four files were graphed on a plot of word frequency rank by actual word frequency. The results are shown in the .png file provided in the Mathematica/ directory.
+The initial files required are the Syntactic N-grams Over Time provided by Google Research. The overview can be found at <http://googleresearch.blogspot.com/2013/05/syntactic-ngrams-over-time.html>, which links to the actual download at <http://commondatastorage.googleapis.com/books/syntactic-ngrams/index.html>. Only the standard Arcs (files 00-98) from the subsection **English 1 Million** were used. While the files themselves are not included, an md5 checksum of each of the gzipped arc files and each file's word count is located in eras/arcs.
 
-Next, parser.py was run, which read in the arcs/arcs.\*\*-of-99.txt files and printed out the total counts for each word in total_word_counts.txt. As this took a while, parser.py was modified to be able to pick up where it left off at any time. total_word_counts.txt was then read in and sorted by frequency, which was written to total_word_counts-sorted.txt. Also, recount.py was run on the arc files, which counts the total occurrences of each relation and writes them to rel-counts-total.txt.
+The arc files provided by Google were parsed into a dictionary, where each word hashed to its number of occurrences in four different eras, as well as the total count of the word. The four eras were \*\*\*\*-1920, 1920-1950, 1950-2000, and 2000-\*\*\*\* (roughly divided by WWI and WWII, as well as the new millennium). For some reason, the Google files include a few items that are marked as appearing zero times total, so the arc files had to be purged of all such occurrences.
 
-At this point it was decided that only the top 250,000 words should be used, and only from eras 2 and 3 (otherwise subsequent scripts would take far too long to run). Thus, the two eras were consolidated, and the top 250,000 most frequent words were written to arcs-top-250K/era3-top-250K.txt. Finally, using total_word_counts-sorted.txt, the arc files were purged of any words that were not present among the most frequent 250K, and these new files were written to arcs/arcs.top.\*\*.txt.
+The words were then sorted by magnitude, based on their number of occurrences in each of the eras, and written to four different files (one for each era) Using Mathematica, each of the four files were graphed on a plot of word frequency rank by actual word frequency, shown below.
 
-Next, running arcs-top-250K/parser.py reads in the data of the top 250,000 words' arcs, and rewrites them all in the form [word, POS tag, relation, second word, POS tag, count]. This is written to p-arcs/top/p-arcs.top.\*\*.txt. After this, running arcs-top-250K/purge.py removes certain troublesome characters that shouldn't appear in English words anyways (e.g. '.', '/', etc.) and writes these new p-arcs to top/p-arcs.\*\*.txt. Relevant md5 and wc files are provided.
+![pre1920](https://s3.amazonaws.com/erosenfeld.github.com/listlogplot%5B1%5D.jpg)
+![1920-1950](https://s3.amazonaws.com/erosenfeld.github.com/listlogplot%5B2%5D.jpg)
+![1950-2000](https://s3.amazonaws.com/erosenfeld.github.com/listlogplot%5B3%5D.jpg)
+![post2000](https://s3.amazonaws.com/erosenfeld.github.com/listlogplot%5B4%5D.jpg)
 
-We now have the top 250,000 words' arcs written to p-arcs/p-arcs.\*\*.txt in a standard format of (w1, w1 POS, rel, w2, w2 POS, count). Running p-arcs/purge.py will replace each word and its Part of Speech tag with a token. Each token is simply the word, with "/A", "/N", or "/V" appended to the end, depending on whether the part of speech indicates the word is used as an adjective, noun, or verb, respectively. This data is written to tagged/p-arcs.tagged.\*\*.txt. Relevant md5 and wc files are provided.
+At this point it was decided that only the top 250,000 words should be used, and only from eras 2 and 3 (otherwise subsequent scripts would take far too long to run). Thus, the two eras were consolidated, and the arc files were purged of any words that were not present among the most frequent 250K.
 
-This code also appends a "/X" to words that are tagged as none of the above, so the data in tagged/p-arcs.tagged.\*\*.txt is run through all occurrences of "/X" are removed. This is then written to purged/p-arcs.purged.\*\*.txt. Relevant md5 and wc files are provided.
+Next, all the arcs were rewritten in the form [word, POS tag, relation, second word, POS tag, count]. These arcs also had any occurrence of particular non-alphanumeric characters (such as '/','\','.', etc.) removed; the existence of these characters in some of the words was attributed to mistakes made by Google's OCR system, as this is where a large portion of the data came from.
 
-Later on, the thesaurus that runs in Similarity.java will need a list of dictionary words. I used the dictionary provided by Mathematica, printed out to arcs-top-250K/dictionary.txt. Running dict_format.py then parsed this and formatted it in arcs-top-250K/dict.txt for later use.
+Each word and its Part of Speech (POS) tag was then replaced with a token. Each token is simply the word, with "/A", "/N", or "/V" appended to the end, depending on whether the part of speech indicates the word is used as an adjective, noun, or verb, respectively. Another opportunity was taken to cleanse the dataset, where any words whose POS tags were not indicative of either a noun, verb, or adjective were removed from consideration.
 
-1. Now that we have p-arcs/purged/p-arcs.purged.\*\*.txt, we run p-arcs/extend.py, which extends the files such that no word (WORD, rather than TOKEN), extends between two files. This is written to purged/p-arcs.f-purged.\*\*.txt. Relevant md5 and wc files are provided.
+The thesaurus needs a list of dictionary words. I used the dictionary provided by Mathematica by calling `DictionaryLookup[]`.
 
-2. Running p-arcs/sorter.py will sort each group of WORDS alphabetically, so they are consequentially grouped by TOKEN. These are written into purged/p-arcs.purged-sorted. Relevant md5 and wc files are provided.
+Following these steps, a series of Python scripts were used to further condense and format the data. A full step-by-step procedure can be found under **Creating Your Own Thesaurus**.
 
-3. Because of the abstraction of POS tags (i.e., several types of nouns, verbs, adjectives), there are now duplicates. Running p-arcs/combine.py will consolidate these duplicates, and write the files out to final/p-arcs.ps-final.\*\*.txt. Because extend.py has removed file barrier-crossing, there should be no issue here. Now that these files exist, you can run arcs-top-250K/normalize.py, which will use this data to write out the words in alphabetical order to word-values.txt. You can then run "cat -n word-values.txt > word-values-count.txt", which will give each word a numerical value based on alphabetical order. This is necessary for indexing later on.
+# How to Implement #
+---
 
-4. There are now files, grouped with no barrier extensions, with alphabetically sorted TOKENS. Run p-arcs/p-ind.py to create final/final-indices.txt, which has the starting indices for each TOKEN (rather than for each WORD, as before).
+There are two options for implementing the thesaurus, each with upsides and downsides. The first approach is slower but more thorough, while the second approach requires additional setup, but rewards you with a practically instant lookup time.
 
-5. Run p-arcs/relcount.py, to count the total occurrences of each relation and write it to p-arcs/relcounts.txt
+## Similarity ##
 
-6. Next, run arcs-top-250K/converter.py. This should read in final/final-indices, relcounts.txt, and the p-arcs/ps-final.\*\*.txt files and produce files where each line is replaced with a long representing it. 'X' means that the second word in the pair was not in the top 250K, so it should be disregarded. An empty line signals the end of the run of the current TOKEN. These are written to long-arcs/final/long-arcs.purged.\*\*.txt. Relevant md5 and wc files are provided.
-7. After this, run p-arcs/reverse.py (not reliant on 6). This takes each (w,r,w2,c) tuple and rewrites it as (w2,r,w,c). This is to make sure that finding matches of the pattern || * r w' || doesn't take obscenely long. These files are written to p-arcs/final/reversed/p-arcs.reversed.\*\*.txt. Relevant md5 and wc files are provided.
-8. Now we need to repeat this consolidation for the newly created reversed files. First, run p-arcs/extend-r.py (which creates p-arcs.reversed-extended files), then run through steps 4 and 6 again (using programs with the '-r' file name, for 'reversed'). sorter.py can be skipped because the words are already sorted, as can combine.py because they are already combined. Additionally, relcount.py can be skipped because the number of each relation's occurrence remains the same. This new data is written to final/final-indices-r.txt and long-arcs/final/reversed/long-arcs.reversed.\*\*.txt. Relevant md5 and wc files are provided.
+### SimilarityTester ###
 
-9. Now that all these files are prepared, you can run java/Stats.java (which will take a LONG TIME unless it is segmented to run on several cores. This will use long-arcs/final/long-arcs.purged and replace each w r w' combination's *count* with its *mutual entropy*. It will only write the mutual information if it is positive, so if there is a word with no pairs for which the mutual information is positive, the program will simply write an "X" to indicate this. This replaced data is written to long-arcs/final/replaced/long-arcs.replaced.\*\*.txt. Relevant md5 and wc files are provided.
+To get a feel for the meaning of the "similarity" value, you can run
+    java SimilarityTester
+Note that this program requires about 4 GB of memory, so you may have to increase the Java heap space with the `-Xmx` flag. This will read in the 98 entropy files and prompt you for two words. Make sure to append "/N", "/A", or "/V" to the words, as the thesaurus treats different POS tags as entirely different tokens. Since similarity is symmetric, the order of the words doesn't matter. If a word doesn't appear in the corpus, the value returned will be 0.0.
 
-10. Switching back to python, run arcs-top-250K/precalculate.py, which reads in the long-arc.replaced files produced in step 9, and appends to each word's mutual information list the sum of all the entropies. This is because the calculation of any two words' similarities requires the sum of the entropies for each word, so rather than calculating it dynamically we precalculate it to save time. These files are written to entropies/entropies.\*\*.txt. Relevant md5 and wc files are provided.
+Running this will give you a feel for the kind of data to expect. As a general rule, a similarity of 0.1 between nouns indicates a strong correlation, while verbs and adjectives will often require a similarity of 0.15 or even higher before they can be considered "linked". Numerically, similarity is an estimate of the probability that one word can replace another while maintaining syntactic integrity. Since the similarity between `train/N` and `bus/N` is 0.15184711204531073, this means that ~15% of the time, one can be substituted for the other and the text will not change drastically in meaning.
 
-Optionally, you can run either SimilarityTester.java or Similarity.java. This takes the entropies/entropies.\*\*.txt files and calculates similarity. SimilarityTester.java takes in two words and calculates the similarity between them. For nouns, a similarity of 0.1 or higher usually indicates a strong relationship, while verbs and adjectives usually require a higher threshold of 0.15 or even higher. Similarity.java takes in a single word and prints out all matches with a similarity of 0.1 or higher, keeping track of the maximum similarity match. Keep in mind that this runs *much* slower than the method described below using CreateThesaurus.java and Thesaurus.java, but is generally more thorough and requires no further setup.
+Lower similarities indicate either no connection or a little connection; a high similarity means that either the two words are actual synonyms, or that one word can often be replaced with another without a major syntax change (e.g. "I took the train to work" vs. "I took the bus to work").  Some examples are listed below:
 
-If you would like to create an almost instant-lookup thesaurus, as opposed to just running through and calculating the similarities for a single word, instead you should use CreateThesaurus.java. This involves running arcs-top-250K/entropies/degree_sort.py. This performs three operations (keep in mind file names will have to be changed due to repository size limitations).
+```
+car/N	- 	automobile/N:	0.2648248259050074
+car/N	- 	bicycle/N:		0.12565174064582982
+car/N	- 	flower/N:		0.03820317325885916
 
-* First, it reads in entropies/entropies.\*\*.txt and indexes them by the second element of each pair (relation and second word), rather than by first word. This is written to rwIndexed/entropies.rwIndexed.\*\*.txt. Relevant md5 and wc files are provided.
+compute/V	- 	calculate/V:	0.5653742891117509
+compute/V	- 	multiply/V:		0.18779126065230747
+compute/V	- 	extricate/V:	0.02329896232188951
 
-* Second, it reads in the files it just wrote and removes all pairs in which any of the involved words are not found in the dictionary, provided by dict.txt. It writes these new data to rwIndexed/entropies.alpha.\*\*.txt. Relevant md5 and wc files are provided.
+happy/A - cheerful/A:		0.2585512615001065
+happy/A - sad/A:			0.16087481318121205
+happy/A - melodramatic/A:	0.017074012637758835
+```
 
-* Finally, this new data is read in, and is sorted by degree distribution. The earlier files are those arcs whose second element have degrees of one, and increases (the maximum is around 40,000). This is written to rwIndexed/degree-sorted/entropies.degree-sorted.\*\*.txt. Relevant md5 and wc files are provided.
+While the program accepts two words with different POS tags, they rarely have a high similarity because of how "similarity" is defined and calculated. However, the option is there.
 
-Now that these three steps have been performed, CreateThesaurus.java can be run. This takes as a command line argument two file numbers between 00 and 98, and uses the data in that range of files (including) to create a file in thesaurus_data with an appropriate name. A file created from a range of 20 parsed files will be about 500MB, though it may vary depending on which 20 files were used. Keep in mind that the accuracy may decrease massively if fewer than the full 98 files are used. Because of the method of calculating mutual entropy and similarity, small changes in size of data can drastically alter results. Also note that the lower-numbered files provide less information, and therefore data based on only lower numbers tends to be extremely erratic.
+### Running the Program ###
 
-You can now run Thesaurus.java. This takes as a command line input the same two files for the range (so it knows what data to search for). After a quick read through of the data, you can give the program any word and, using polynomial regression on the number of files that were parsed, the program will output any word in its database whose similarity with the given word is above the calculated threshold. Note that the threshold changes for different types of words (noun/verb/adjective) in order to provide a more appropriate matching. Note also that only words of the same POS will be returned, as those were the only ones whose similarities were calculated in the first place. You can also give a threshold (in the form of a double) after the word to specify a particular threshold (for example, type "0" after the word to get a list of all ~400 matches).
+Now that you have a good feel for similarity, you can run
+    java Similarity
+Again, this will require about 4 GB of memory, so use the `-Xmx` flag if necessary. This program takes in a single word and prints out all matches with a similarity of 0.1 or higher, keeping track of the maximum similarity match. Keep in mind that this runs *much* slower than the second method (described below), but is more thorough and requires no additional setup.
+
+## Thesaurus ##
+
+If you would like to create an almost instant-lookup thesaurus, as opposed to just running through and calculating the similarities for a single word, you should use `CreateThesaurus.java`. This requires some additional setup which can be completed by running
+    python degree_sort.py
+This performs three operations, detailed below (keep in mind file names will have to be changed due to repository size limitations).
+
+* First, it reads in the entropies and indexes them by the second element of each pair (relation and second word), rather than by first word.
+
+* Second, it reads in the files it just wrote and removes all pairs in which any of the involved words are not found in the dictionary provided by Mathematica.
+
+* Finally, this new data is read in, and is sorted by degree distribution. The degree of a relation-to-second-word pair is the total number of "first words" to which the pair is attached. The earlier files are those arcs whose second element have degrees of one, and increases (the largest is around 40,000).
+
+Now that these three steps have been performed, `CreateThesaurus.java` can be run. This takes as a command line argument two file numbers between 00 and 98, and uses the data in that range of files (including) to create a file in thesaurus_data with an appropriate name. If you would like to include all data for a specific range of degrees, run
+    python find_degree_range.py
+which takes as command line input the upper and lower bounds, and returns the file range that includes those bounds.
+
+A file created from a range of 20 parsed files will be about 500MB, though it will vary depending on which 20 files were used. Keep in mind that the accuracy may decrease massively if fewer than the full 98 files are used (though 20 files is usually enough to get a good estimate). Because of the method of calculating mutual entropy and similarity, small changes in size of data can drastically alter results. Also note that the lower-numbered files provide less information, and therefore data based on only lower numbers tends to be extremely erratic (but they are much faster to parse through).
+
+You can now run `Thesaurus.java`. This takes as a command line input the same two files for the range (so it knows what file to search for). After a quick read through of the data, you can give the program any word (with the attached POS tag) and the program will output any word in its database whose similarity with the given word is above the calculated threshold. The threshold is calculated based on the number of file parsed; since it keeps a running total, the value for a "highly similar matching" is obviously going to be less than 0.1 if you didn't go through the entire database). Note that the threshold changes for different types of words (noun/verb/adjective) in order to provide a more appropriate matching. Also, only words of the same POS will be returned, as those were the only ones whose similarities were calculated in the first place. You can also give a threshold (in the form of a double) after the word to specify a particular threshold (for example, type "0" after the word to get a list of all ~400 matches).
+
+# Creating Your Own Thesaurus #
+---
+
