@@ -77,7 +77,7 @@ If you would like to create an almost instant-lookup thesaurus, as opposed to ju
 
     python degree_sort.py
 
-This performs three operations, detailed below (keep in mind file names will have to be changed due to repository size limitations).
+This performs three operations, detailed below.
 
 * First, it reads in the entropies and indexes them by the second element of each pair (relation and second word), rather than by first word.
 

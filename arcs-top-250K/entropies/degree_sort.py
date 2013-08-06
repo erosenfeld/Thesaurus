@@ -3,11 +3,11 @@ import sys, math
 word_vals = []
 dict = []
 
-with open('../../Thesaurus/arcs-top-250K/dict.txt','r') as f:
+with open('../dict.txt','r') as f:
 	for line in f:
 		dict.append(line.lower().rstrip())
 
-with open('../../Thesaurus/arcs-top-250K/word-values.txt','r') as f:
+with open('../word-values.txt','r') as f:
 	for line in f:
 		word_vals.append(line.rstrip())
 
