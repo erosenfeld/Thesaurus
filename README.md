@@ -46,13 +46,13 @@ Running this will give you a feel for the kind of data to expect. As a general r
 Lower similarities indicate either no connection or a little connection; a high similarity means that either the two words are actual synonyms, or that one word can often be replaced with another without a major syntax change (e.g. "I took the train to work" vs. "I took the bus to work").  Some examples are listed below:
 
 ```
-car/N	- 	automobile/N:	0.2648248259050074
-car/N	- 	bicycle/N:		0.12565174064582982
-car/N	- 	flower/N:		0.03820317325885916
+car/N - automobile/N:	0.2648248259050074
+car/N - bicycle/N:		0.12565174064582982
+car/N - flower/N:		0.03820317325885916
 
-compute/V	- 	calculate/V:	0.5653742891117509
-compute/V	- 	multiply/V:		0.18779126065230747
-compute/V	- 	extricate/V:	0.02329896232188951
+compute/V - calculate/V:	0.5653742891117509
+compute/V - multiply/V:		0.18779126065230747
+compute/V - extricate/V:	0.02329896232188951
 
 happy/A - cheerful/A:		0.2585512615001065
 happy/A - sad/A:			0.16087481318121205
