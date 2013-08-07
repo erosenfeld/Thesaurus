@@ -124,7 +124,7 @@ Now that these three steps have been performed, you can run
 
     java CreateThesaurus <file1> <file2>
 
-Again, this will probably require an increase in the maximum Java heap size; the size required depends on how many files/which files you use. This takes as a command line argument two file numbers between 00 and 98, and uses the data in that range of files (including) to create a file in thesaurus_data with an appropriate name. If you would like to include all data for a specific range of degrees, run
+Again, this will probably require an increase in the maximum Java heap size; 4GB should be enough. This takes as a command line argument two file numbers between 00 and 98, and uses the data in that range of files (including) to create a file in thesaurus_data with an appropriate name. If you would like to include all data for a specific range of degrees, run
 
     python find_degree_range.py <degree-lower-bound> <degree-upper-bound>
 
@@ -175,7 +175,7 @@ You can also give a threshold (in the form of a double) after the word to specif
 # Creating Your Own Thesaurus #
 ---
 
-This section provides step-by-step instructions on preparing the files necessary to create your own thesaurus using a different corpus. The arc files must be parsed and formatted in the method described by Google Research in their paper (see [the **Introduction**](https://github.com/erosenfeld/Thesaurus#introduction)). A few *very* simple scripts are left out (this was initially intended to be a solo project), but can easily be reproduced. Assume a base directory of Thesaurus/, with all subsequent subdirectories explicitly indicated where necessary for file distinction. All code was written in `Python 2.7.2` and `java version "1.6.0_51"`.
+This section provides step-by-step instructions on preparing the files necessary to create your own thesaurus using a different corpus. The arc files must be parsed and formatted in the method described by Google Research in their paper (see the [**Introduction**](https://github.com/erosenfeld/Thesaurus#introduction)). A few *very* simple scripts are left out (this was initially intended to be a solo project), but can easily be reproduced. Assume a base directory of Thesaurus/, with all subsequent subdirectories explicitly indicated where necessary for file distinction. All code was written in `Python 2.7.2` and `java version "1.6.0_51"`.
 
 **While all this computation could have been condensed into a single script, there are likely to be a lot of individual requirements, time and space constraints, etc. If this were all done at once, it would require hundreds of gigs of RAM and hard-drive space, as well as several hundred hours of computation time. As a result, the computation has been kept separated as it was done originally.**
 
@@ -195,7 +195,7 @@ Navigate to `arcs-top-250K` and run `python parser.py`. This will read in the ne
 
 Make sure you are in the `p-arcs/` directory, the run `python tag.py`. This will replace each word and its POS tag with a token; a token is simply the word followed by a "/N", "/V", or "/A" depending on the word's part of speech. This is written to `tagged/p-arcs.tagged.**.txt`, but must be cleansed of all occurrences of "/X", which is written when a word's POS tag matches none of the three categories. Write this data to `purged/p-arcs.purged.**.txt`.
 
-Now you need a dictionary, because much of the data is comprised of junk words as a result of OCR error. I printed out the dictionary from Mathematica to `arcs-top-250L/dictionary.txt`, though you can get yours elsewhere. Run `python dict_format.py` to format it and write it to `dict.txt`, or write your own formatter if you have a differently formatted list to begin with.
+Now you need a dictionary, because much of the data is comprised of junk words as a result of OCR error. I printed out the dictionary from Mathematica to `arcs-top-250K/dictionary.txt`, though you can get yours elsewhere. Run `python dict_format.py` to format it and write it to `dict.txt`, or write your own formatter if you have a differently formatted list to begin with.
 
 ## Final Formatting ##
 
@@ -209,6 +209,6 @@ Now you need a dictionary, because much of the data is comprised of junk words a
 8. Again, navigate to `arcs-top-250K` and type `python converter.py`. This uses several of the files you just produced and converts each arc into a single 64-bit long. Any occurrence of an 'X' indicates that one or more of the words in the arc are not in the top 250K, so it should be disregarded. This is written to `long-arcs/final/long-arcs.purged.**.txt`.
 9. Now we need to repeat this consolidation for the newly created reversed files. Repeat steps 1, 5, and 8, but use the files with '-r' appended to their names, for "reversed". This new data is written to `final/final-indices-r.txt` and `long-arcs/final/reversed/long-arcs.reversed.**.txt`.
 10. Now that all these files are prepared, you can navigate to the `arcs-top-250K/java` folder and run `java Stats.java` (which will take a LONG TIME unless it is segmented to run on several cores). This will use the `long-arcs/final/long-arcs.purged` files and replace the count in each [word1, relation, word2, count] tuple with the two words' calculated mutual entropy. It will only write the mutual information if it is positive, so if there is a word with no pairs for which the mutual information is positive, the program will simply write an "X" to indicate this. This replaced data is written to `long-arcs/final/replaced/long-arcs.replaced.**.txt`.
-11. Switching back to python, run arcs-top-250K/precalculate.py, which reads in the long-arc.replaced files produced in step 10, and appends to each word's mutual information list the sum of all the entropies. This is because the calculation of any two words' similarities requires the sum of the entropies for each word, so rather than calculating it dynamically we precalculate it to save time. These files are written to `entropies/entropies.**.txt`.
+11. Switching back to python, navigate to `arcs-top-250K/` and type `python precalculate.py`. This reads in the long-arc.replaced files produced in step 10, and appends to each word's mutual information list the sum of all the entropies. This is because the calculation of any two words' similarities requires the sum of the entropies for each word, so rather than calculating it dynamically we precalculate it to save time. These files are written to `entropies/entropies.**.txt`.
 
 Now that you have the entropy files, you can use the thesaurus by running `java Similarity`. Optionally, you can do further setup to create an instant-lookup thesaurus. Both methods are described in detail under [**How to Implement**](https://github.com/erosenfeld/Thesaurus#how-to-implement).
