@@ -38,11 +38,5 @@ Thumbs.db
 .hgignore
 .hg/*
 
-entropies.*.txt
-p-arcs.*.txt
-long-arcs.*.txt
-*/thesaurus_data
-README.txt
-rel-counts-total.txt
-total_word*.txt
-era3*.txt
+*.txt
+*.orig
