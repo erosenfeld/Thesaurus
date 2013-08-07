@@ -15,7 +15,7 @@ def tag(purge):
 	for i in range(99):
 		n = 0
 		print 'opening %02d' % i
-		with open('p-arcs.%02d.txt'%i,'r') as fr:
+		with open('top/p-arcs.%02d.txt'%i,'r') as fr:
 			fw = open('tagged/p-arcs.tagged.%02d.txt'%i,'w')
 	
 			for line in fr:
