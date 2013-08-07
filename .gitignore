@@ -38,11 +38,11 @@ Thumbs.db
 .hgignore
 .hg/*
 
-itemsets-frequencies.txt
-pair-counts.condensed.txt
 entropies.*.txt
 p-arcs.*.txt
 long-arcs.*.txt
 */thesaurus_data
-/create.sh
 README.txt
+rel-counts-total.txt
+total_word*.txt
+era3*.txt
