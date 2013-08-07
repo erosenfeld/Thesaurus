@@ -5,7 +5,7 @@ import sys
 	in the form of (w, w POS, relation, w', w' POS, count)'''
 
 for i in range(99):
-	with open('arcs/arcs.top.%02d.txt'%i,'r') as f:
+	with open('../arcs/arcs.top.%02d.txt'%i,'r') as f:
 		f2 = open('p-arcs/p-arcs.top.%02d.txt'%i,'w')
 		print 'opening %02d' % i
 		i = 0

@@ -62,6 +62,6 @@ def write(file):
 			f.write('%s %d %d %d %d %d\n' % (w,(d0+d1+d2+d3),d0,d1,d2,d3))
 
 for i in range(0,99):
-	parse('arcs.%02d-of-99.txt' % i)
+	parse('../arcs/arcs.%02d-of-99.txt' % i)
 	print 'writing to file'
 	write('eras.%02d.txt' % i)
