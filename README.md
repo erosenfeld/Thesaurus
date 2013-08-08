@@ -31,6 +31,12 @@ Following these steps, a series of Python scripts were used to further condense 
 
 There are two options for implementing the thesaurus, each with upsides and downsides. The first approach is slower but more thorough, while the second approach requires additional setup, but rewards you with a practically instant lookup time.
 
+## Preparation ##
+
+You can find the necessary files [here](https://s3.amazonaws.com/erosenfeld.github.com/data.tar.gz). After unzipping, place `word-values.txt` in `Thesaurus`. Then, unzip `entropies.tar.gz` into `arcs-top-250K/entropies/`. You are provided the md5 and wc files to verify file integrity. Finally, unzip `entropies.degree-sorted.tar.gz` into `arcs-top-250K/entropies/rwIndexed/degree-sorted/`. Again, the md5 and wc files are provided.
+
+Note that you will also need the dictionary, named `dict.txt`, placed in the `arcs-top-250K` directory. For copyright reasons I cannot include the one I used (I got it from Mathematica). If you have access to Mathematica, you can print out their dictionary using `DictionaryLookup[]`, and then format it using the provided `dict_format.py`. Otherwise, just create a dictionary with the words desired, one word per line, with no extra characters.
+
 ## Similarity ##
 
 #### SimilarityTester ####
