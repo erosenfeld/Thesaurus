@@ -142,41 +142,38 @@ You can now run
 
     java Thesaurus <file1> <file2>
 
-This takes as a command line input the same two files for the range (so it knows what file to search for). After a quick read through the data, you can give the program any word (with the attached POS tag) and the program will output any word in its database whose similarity with the given word is above the calculated threshold. The threshold is calculated based on the number of files parsed; since it keeps a running total, the value for a "highly similar matching" is obviously going to be less than 0.1 if you didn't go through the entire database. Using some predetermined boundaries, [a graph was derived](https://s3.amazonaws.com/erosenfeld.github.com/noun-similarity-threshold.png), representing minimum required similarity as a function of number of files parsed.
+This takes as a command line input the same two files for the range (so it knows what file to search for). After a quick read through the data, you can give the program any word (with the attached POS tag), and some integer *n* (optional, default is 20). The program will output the top *n* matches; since it keeps a running total for calculating similarity, the value for a "highly similar matching" is going to be less than 0.1. Still, the proportional similarity remains the same. Play around with the numbers a bit to get a feel for what indicates a "high" similarity.
 
-Note that the threshold changes for different types of tags (verb, noun, or adjective) in order to provide a more appropriate matching. Also, only words with the same tag will be returned, as those were the only ones whose similarities were calculated in the first place. An example is shown below:
+Note that only words with the same tag will be returned, as those were the only ones whose similarities were calculated in the first place. An example is shown below:
 
 ```
-elan-mp:java elan$ java -Xmx4g Thesaurus 0 20
+elan-mp:java elan$ java -Xmx4g Thesaurus 0 98
 
 Reading...............................................................
 
 Enter word: calculus/N
 
-calculi/N - 0.01942499467852897
-algebra/N - 0.01399100278066545
-geometry/N - 0.008408733712801793
-arithmetic/N - 0.006997741489690139
-concretions/N - 0.006980555983174796
-logic/N - 0.006182549045309564
-integral/N - 0.005629090815530466
-gallstone/N - 0.004993704825605044
-notation/N - 0.004267997942994417
-equations/N - 0.004212733060622694
-plaque/N - 0.0038693567393676544
-caries/N - 0.0038497330362240547
-tumor/N - 0.0037901328999775438
-multiplication/N - 0.00361934387862254
-tartar/N - 0.003603262298334568
-physics/N - 0.0035871388101105356
-predicates/N - 0.0034127363121227387
-bladder/N - 0.003280695597132573
-goldman/N - 0.0031363630550712528
-saliva/N - 0.00312613588163945
-gravel/N - 0.0030887793139308217
+calculi/N - 0.008108136721642399
+algebra/N - 0.006617663264965374
+geometry/N - 0.004505890905284084
+arithmetic/N - 0.00428286400119506
+logic/N - 0.003952770315791044
+notation/N - 0.0039047958817384513
+theorem/N - 0.0035213749911644832
+equations/N - 0.0034312736606115944
+physics/N - 0.003125087616175609
+treatise/N - 0.0029247978660513177
+tumor/N - 0.0028026203959127735
+concretions/N - 0.002772973874239782
+cancer/N - 0.002675735722192809
+cyst/N - 0.0026538692728972483
+equation/N - 0.0025794840493142787
+integral/N - 0.0024786733006385646
+chemistry/N - 0.002474210067375915
+formula/N - 0.0024657696354483958
+analysis/N - 0.002451462012524073
+abscess/N - 0.0024338765710946965
 ```
-
-You can also specify a particular threshold by entering the number after the word (for example, type "0" after the word to get a list of all ~400 matches).
 
 # Creating Your Own Thesaurus #
 ---

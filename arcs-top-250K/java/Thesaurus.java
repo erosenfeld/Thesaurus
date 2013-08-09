@@ -85,8 +85,7 @@ public class Thesaurus {
 
 		while(true) {
 
-			double threshold = 0.0;
-			boolean set = false;
+			int numToShow = 20;
 			String w1 = "";
 
 			try {
@@ -97,8 +96,7 @@ public class Thesaurus {
 
 				int temp = w1.indexOf(' ');
 				if (temp != -1) {
-					set = true;
-					threshold = Double.parseDouble(w1.substring(temp+1));
+					numToShow = Integer.parseInt(w1.substring(temp+1));
 					w1 = w1.substring(0,temp);
 				}
 
@@ -124,39 +122,9 @@ public class Thesaurus {
 
 					double sim = totalSum * 1.0 / (w1Sum + w2Sum);
 
-					char type = w2.charAt(w2.length()-1);
-					int numFiles = end-start;
-
-					/*
-
-						calculate threshold using polynomial regression based on numFiles
-
-							N:
-								0 - 0.0018    UPDATE THIS
-								1 - 0.0018
-								20 - 0.003
-								98 - 0.1
-
-							V/A:
-								0 - 0.0027
-								1 - 0.0027
-								20 - 0.0031
-								98 - 0.15
-					*/
-
-					if (!set) {
-						if (type == 'N') {
-							threshold = 1.8e-003 - 1.3188e-006*numFiles + 1.22686e-006*Math.pow(numFiles,2) + 9.1954e-008*Math.pow(numFiles,3);
-						} else {
-							threshold = 2.7e-003 + 2.651e-006*numFiles - 2.8358e-006*Math.pow(numFiles,2) + 1.8516e-007*Math.pow(numFiles,3);
-						}
-					}
-
-					if (sim > threshold) {
-						valList[listInd] = sim;
-						stringList[listInd] = w2 + " - " + sim;
-						listInd++;
-					}
+					valList[listInd] = sim;
+					stringList[listInd] = w2 + " - " + sim;
+					listInd++;
 
 				}
 
@@ -164,7 +132,7 @@ public class Thesaurus {
 
 				Arrays.sort(valList);
 
-				for(int i=ARRAYSIZE-1; i>=ARRAYSIZE-listInd; i--) {
+				for(int i=ARRAYSIZE-1; i>=ARRAYSIZE-numToShow; i--) {
 
 					int index = indexOf(valClone,valList[i]);
 					if (index == -1) continue;
