@@ -18,7 +18,7 @@ The words were then sorted by magnitude, based on their number of occurrences in
 
 At this point it was decided that only the top 250,000 words should be used, and only from eras 2 and 3 (otherwise subsequent scripts would take too long to run). Thus, the two eras were consolidated, and the arc files were purged of any words that were not present among the most frequent 250K.
 
-Next, all the arcs were rewritten in the form [*word1*, *POS tag*, *relation*, *word2*, *POS tag*, *count*]. These arcs also had any occurrence of particular non-alphanumeric characters (such as slashes or other punctuation) removed; the existence of these characters in some of the words was attributed to mistakes made by Google's OCR, as this is where a large portion of the data came from.
+Next, all the arcs were rewritten in the form \[*word1*, *POS tag*, *relation*, *word2*, *POS tag*, *count*\]. These arcs also had any occurrence of particular non-alphanumeric characters (such as slashes or other punctuation) removed; the existence of these characters in some of the words was attributed to mistakes made by Google's OCR, as this is where a large portion of the data came from.
 
 Each word and its Part of Speech (POS) tag was then replaced with a token. Each token is simply the word, with "/A", "/N", or "/V" appended to the end, depending on whether the part of speech indicates the word is used as an adjective, noun, or verb, respectively. Another opportunity was taken to cleanse the dataset, where any words whose POS tags were not indicative of either a noun, verb, or adjective were removed from consideration.
 
@@ -120,11 +120,11 @@ If you would like to create an almost instant-lookup thesaurus, as opposed to ju
 
 This performs three operations, detailed below.
 
-* First, it reads in the [*word1*, *relation*, *word2*, *mutual information*] sets and indexes them by the second element of each pair (relation and word2), rather than by word1.
+* First, it reads in the \[*word1*, *relation*, *word2*, *mutual information*\] sets and indexes them by the second element of each pair (relation and word2), rather than by word1.
 
 * Second, it reads in the files it just wrote and removes all pairs in which any of the involved words are not found in the dictionary provided by Mathematica.
 
-* Finally, this new data is read in, and is sorted by degree distribution. The degree of a [*relation*, *word2*] pair is the total number of [*word1*] elements to which the pair is attached. The earlier files are those arcs whose second element have degrees of one, and increases as you go through the files (the largest is around 40,000).
+* Finally, this new data is read in, and is sorted by degree distribution. The degree of a \[*relation*, *word2*\] pair is the total number of \[*word1*\] elements to which the pair is attached. The earlier files are those arcs whose second element have degrees of one, and increases as you go through the files (the largest is around 40,000).
 
 Now that these three steps have been performed, you can run
 
@@ -208,10 +208,10 @@ Now you need a dictionary, because much of the data is comprised of junk words a
 4. You should now navigate to `arcs-top-250K` and run `python normalize.py`, which will write the newest list of words in alphabetical order to `word-values.txt`.
 5. Go the `p-arcs/` directory and type `python p-ind.py` to create `final/final-indices.txt`, which has the starting indices for each token.
 6. Now run `python relcount.py` (make sure you are in the `p-arcs/` directory!), to count the frequency of each relation. This is written to `p-arcs/relcounts.txt`.
-7. Next, type `python reverse.py`. This takes each [*word1*, *relation*, *word2*, *count*] tuple and rewrites it as [*word2*, *relation*, *word1*, *count*], then sorts the whole thing. This is so that finding matches of the pattern || \* r w' || doesn't take obscenely long. These files are written to `final/reversed/p-arcs.reversed.**.txt`.
+7. Next, type `python reverse.py`. This takes each \[*word1*, *relation*, *word2*, *count*\] tuple and rewrites it as \[*word2*, *relation*, *word1*, *count*\], then sorts the whole thing. This is so that finding matches of the pattern || \* r w' || doesn't take obscenely long. These files are written to `final/reversed/p-arcs.reversed.**.txt`.
 8. Again, navigate to `arcs-top-250K/` and type `python converter.py`. This uses several of the files you just produced and converts each arc into a single 64-bit long. Any occurrence of an 'X' indicates that one or more of the words in the arc are not in the top 250K, so it should be disregarded. This is written to `long-arcs/final/long-arcs.purged.**.txt`.
 9. Now we need to repeat this consolidation for the newly created reversed files. Repeat steps 1, 5, and 8, but use the files with '-r' appended to their names, for "reversed". This new data is written to `final/final-indices-r.txt` and `long-arcs/final/reversed/long-arcs.reversed.**.txt`.
-10. Now that all these files are prepared, you can navigate to the `arcs-top-250K/java/` folder and run `java Stats.java` (which will take a LONG TIME unless it is segmented to run on several cores). This will use the `long-arcs/final/long-arcs.purged` files and replace the count in each [*word1*, *relation*, *word2*, *count*] tuple with the two words' calculated mutual information. It will only write the mutual information if it is positive, so if there is a word with no pairs for which the mutual information is positive, the program will simply write an "X" to indicate this. This replaced data is written to `long-arcs/final/replaced/long-arcs.replaced.**.txt`.
+10. Now that all these files are prepared, you can navigate to the `arcs-top-250K/java/` folder and run `java Stats.java` (which will take a LONG TIME unless it is segmented to run on several cores). This will use the `long-arcs/final/long-arcs.purged` files and replace the count in each \[*word1*, *relation*, *word2*, *count*\] tuple with the two words' calculated mutual information. It will only write the mutual information if it is positive, so if there is a word with no pairs for which the mutual information is positive, the program will simply write an "X" to indicate this. This replaced data is written to `long-arcs/final/replaced/long-arcs.replaced.**.txt`.
 11. Switching back to python, navigate to `arcs-top-250K/` and type `python precalculate.py`. This reads in the `long-arc.replaced.**.txt` files produced in step 10, and appends the sum of all the information to each word's mutual information list. This is because the calculation of any two words' similarities requires the sum of the entropies for each word, so rather than calculating it dynamically we precalculate it to save time. These files are written to `entropies/entropies.**.txt`.
 
 Now that you have the entropy files, you can use the thesaurus by running `java Similarity`. Optionally, you can do further setup to create an instant-lookup thesaurus. Both methods are described in detail under [**How to Implement**](https://github.com/erosenfeld/Thesaurus#how-to-implement).
